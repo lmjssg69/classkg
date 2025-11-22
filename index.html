@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Minecraft客户端 - 加入我们</title>
+<style>
+  :root {
+    --accent:#61b1ff;
+    --accent-glow:rgba(97, 177, 255, 0.4);
+    --dark:#111;
+    --light:#f5f5f5;
+    --backdrop:rgba(0,0,0,0.7);
+  }
+  * {
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+  }
+  body {
+    font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    background:var(--dark);
+    color:var(--light);
+    overflow-x:hidden;
+  }
+  /* 雪花容器 */
+  #snow-container {
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:50;
+  }
+  .snowflake {
+    position:absolute;
+    background:#fff;
+    border-radius:50%;
+    opacity:0.7;
+    animation:fall linear infinite;
+  }
+  @keyframes fall {
+    to {
+      transform:translateY(100vh) translateX(20px);
+      opacity:0;
+    }
+  }
+  /* 全屏背景 */
+  .hero {
+    width:100vw;
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    background:linear-gradient(var(--backdrop),rgba(0,0,0,0.4)),#222;
+    padding:0 20px;
+    position:relative;
+    z-index:10;
+  }
+  .logo {
+    font-size:clamp(2.5rem, 8vw, 3rem);
+    margin-bottom:1rem;
+    text-shadow:0 0 12px var(--accent-glow), 0 0 24px var(--accent-glow);
+    color:var(--accent);
+  }
+  .tagline {
+    font-size:clamp(1rem, 3vw, 1.2rem);
+    max-width:600px;
+    color:var(--accent);
+    opacity:0.9;
+  }
+  .btn {
+    display:inline-block;
+    margin-top:2rem;
+    padding:clamp(0.8rem, 3vw, 1rem) clamp(1.5rem, 5vw, 1.8rem);
+    background:var(--accent);
+    color:#000;
+    font-weight:600;
+    border-radius:12px;
+    text-decoration:none;
+    box-shadow:0 8px 24px var(--accent-glow);
+    transition:all 0.3s ease;
+  }
+  .btn:hover {
+    background:#4a9eff;
+    transform:translateY(-3px);
+    box-shadow:0 12px 32px var(--accent-glow);
+  }
+  .container {
+    width:100%;
+    padding:0 24px;
+    position:relative;
+    z-index:10;
+  }
+  .section {
+    padding:clamp(6rem, 15vw, 8rem) 0;
+    opacity:0;
+    transform:translateY(40px);
+    transition:opacity 0.8s ease, transform 0.8s ease;
+  }
+  .section.visible {
+    opacity:1;
+    transform:translateY(0);
+  }
+  .section h2 {
+    font-size:clamp(1.8rem, 5vw, 2rem);
+    margin-bottom:1.5rem;
+    color:var(--accent);
+    text-shadow:0 0 10px var(--accent-glow);
+    text-align:center;
+  }
+  .features {
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:24px;
+  }
+  .feature {
+    background:rgba(255,255,255,0.05);
+    padding:20px;
+    border-radius:16px;
+    border:1px solid rgba(255,255,255,0.08);
+  }
+  .feature h3 {
+    color:var(--accent);
+    font-size:clamp(1.1rem, 3vw, 1.2rem);
+    margin-bottom:8px;
+  }
+  .feature p {
+    font-size:clamp(0.9rem, 2vw, 0.95rem);
+    color:var(--accent);
+    opacity:0.8;
+  }
+  .join-section {
+    background:rgba(255,255,255,0.03);
+    border-radius:20px;
+    padding:clamp(24px, 5vw, 32px);
+    margin-top:clamp(6rem, 15vw, 8rem);
+    text-align:center;
+    border:1px solid rgba(255,255,255,0.08);
+  }
+  /* QQ弹窗 */
+  .popup {
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.85);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    z-index:100;
+    opacity:0;
+    visibility:hidden;
+    transition:opacity 0.6s ease-in-out, visibility 0.6s ease-in-out;
+    padding:20px;
+  }
+  .popup.active {
+    opacity:1;
+    visibility:visible;
+  }
+  .card {
+    background:#1a1a1a;
+    padding:clamp(24px, 5vw, 28px);
+    border-radius:20px;
+    text-align:center;
+    max-width:420px;
+    width:100%;
+    box-shadow:0 20px 40px rgba(0,0,0,0.5);
+    transform:translateY(20px) scale(0.95);
+    transition:transform 0.6s ease-in-out;
+    border:1px solid rgba(255,255,255,0.08);
+  }
+  .popup.active .card {
+    transform:translateY(0) scale(1);
+  }
+  .card h2 {
+    color:var(--accent);
+    margin-top:0;
+    font-size:clamp(1.6rem, 4vw, 1.8rem);
+  }
+  .card p {
+    font-size:clamp(0.9rem, 2vw, 0.95rem);
+    color:var(--accent);
+    opacity:0.8;
+  }
+  .close {
+    position:absolute;
+    top:20px;
+    right:20px;
+    background:none;
+    border:none;
+    color:var(--accent);
+    font-size:1.5rem;
+    cursor:pointer;
+    opacity:0.7;
+    transition:opacity 0.3s;
+  }
+  .close:hover {
+    opacity:1;
+  }
+  .qq-badge {
+    display:inline-flex;
+    align-items:center;
+    gap:0.5rem;
+    background:#12b7f5;
+    color:#fff;
+    padding:clamp(0.7rem, 2vw, 0.8rem) clamp(1rem, 3vw, 1.2rem);
+    border-radius:12px;
+    text-decoration:none;
+    font-weight:600;
+    margin-top:1rem;
+    box-shadow:0 8px 24px rgba(18,183,245,0.3);
+  }
+  html {
+    scroll-behavior:smooth;
+  }
+</style>
+</head>
+<body>
+  <div id="snow-container"></div>
+
+  <header class="hero">
+    <div class="logo">Minecraft客户端</div>
+    <div class="tagline">3.6版本适配 | 自定义客户端 | 畅享胜利时刻</div>
+    <a href="#features" class="btn">了解更多</a>
+  </header>
+
+  <div class="container">
+    <section id="features" class="section">
+      <h2>为什么选择我们</h2>
+      <div class="features">
+        <div class="feature">
+          <h3>定制材质包</h3>
+          <p>适配专属材质包，画质升级，视觉体验更流畅</p>
+        </div>
+        <div class="feature">
+          <h3>自定义客户端</h3>
+          <p>定制客户端，支持起床战争、空岛战争等玩法</p>
+        </div>
+        <div class="feature">
+          <h3>稳定流畅</h3>
+          <p>低延迟不卡顿，重写C++、Rust、Java版性能优化等，胜利时刻不中断</p>
+        </div>
+        <div class="feature">
+          <h3>实力不强科技来凑</h3>
+          <p>群里有con公益，进群即可获取</p>
+        </div>
+        <div class="feature">
+          <h3>我们承诺，永久公益</h3>
+          <p>群里有大量材质包和客户端</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="join-section section">
+      <h2>加入我们</h2>
+      <p>获取材质包、自定义客户端下载，解锁更多胜利技巧</p>
+      <a href="https://qm.qq.com/cgi-bin/qm/qr?k=908203738" target="_blank" class="btn">立即加入QQ群</a>
+    </section>
+  </div>
+
+  <div id="joinPopup" class="popup">
+    <button id="closeBtn" class="close">&times;</button>
+    <div class="card">
+      <h2>加入我们的QQ群</h2>
+      <p>群号：<strong>908203738</strong></p>
+      <p>领取定制材质包+自定义客户端，一起开黑胜利！</p>
+      <a href="https://qm.qq.com/cgi-bin/qm/qr?k=908203738" target="_blank" class="qq-badge">打开QQ加入群聊</a>
+    </div>
+  </div>
+
+<script>
+  const popup = document.getElementById('joinPopup');
+  const closeBtn = document.getElementById('closeBtn');
+  const qqLink = document.querySelector('.qq-badge');
+  const sections = document.querySelectorAll('.section');
+  const snowContainer = document.getElementById('snow-container');
+  let popupShown = false;
+
+  // 雪花效果
+  function createSnowflake() {
+    const size = Math.random() * 6 + 2;
+    const flake = document.createElement('div');
+    flake.className = 'snowflake';
+    flake.style.width = `${size}px`;
+    flake.style.height = `${size}px`;
+    flake.style.left = `${Math.random() * 100}vw`;
+    flake.style.top = `-10px`;
+    flake.style.opacity = Math.random() * 0.5 + 0.5;
+    const duration = Math.random() * 8 + 5;
+    flake.style.animationDuration = `${duration}s`;
+    snowContainer.appendChild(flake);
+    setTimeout(() => flake.remove(), duration * 1000);
+  }
+  setInterval(createSnowflake, 150);
+
+  // 弹窗显示+锁滚动
+  function showPopup() {
+    if (!popupShown) {
+      popup.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      popupShown = true;
+    }
+  }
+
+  // 弹窗关闭+解锁滚动
+  function hidePopup() {
+    popup.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  // 滚动渐变显示
+  function checkVisibility() {
+    sections.forEach(section => {
+      const rect = section.getBoundingClientRect();
+      if (rect.top < window.innerHeight * 0.9 && rect.bottom > 0) {
+        section.classList.add('visible');
+      }
+    });
+    if (window.scrollY > 200 && !popupShown) showPopup();
+  }
+
+  window.addEventListener('scroll', checkVisibility);
+  window.addEventListener('load', checkVisibility);
+  closeBtn.addEventListener('click', hidePopup);
+  popup.addEventListener('click', (e) => e.target === popup && hidePopup());
+  qqLink.addEventListener('click', hidePopup);
+</script>
+</body>
+</html>
